@@ -11,7 +11,7 @@ pipeline {
         stage('Step 2: Terraform Init') {
             steps {
                 script {
-                    sh 'terraform init'
+                    sh 'terraform init -reconfigure'
                 }
             }
         }
@@ -35,7 +35,7 @@ pipeline {
         stage('Step 5: Terraform Destroy') {
             steps {
                 script {
-                    sh 'terraform destroy -auto-approve'
+                    sh 'terraform destroy'
                 }
             }
         }
