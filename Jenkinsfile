@@ -1,49 +1,49 @@
+
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        AWS_DEFAULT_REGION    = "eu-north-1"
+  stages {
+
+    stage('Checkout Code') {
+      steps {
+        git branch: 'main',
+            url: 'https://github.com/Siddhantkadam28/TerrafromdevOPS.git'
+      }
     }
 
-    stages {
-
-        stage('Step 1: SCM Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Step 2: Terraform Init') {
-            steps {
-                sh 'terraform init -reconfigure'
-            }
-        }
-
-        stage('Step 3: Terraform Plan') {
-            steps {
-                sh 'terraform plan -out=tfplan'
-            }
-        }
-
-        stage('Step 4: Terraform Apply') {
-            steps {
-                sh 'terraform apply -auto-approve tfplan'
-            }
-        }
-
-        stage('Step 5: Terraform Destroy (Disabled)') {
-            when {
-                expression { false }
-            }
-            steps {
-                sh 'terraform destroy -auto-approve'
-            }
-        }
+    stage('Terraform Init') {
+      steps {
+        sh '''
+          terraform version
+          terraform init --reconfigure
+        '''
+      }
     }
 
-    post {
-        always {
-            deleteDir()   // safer than cleanWs()
-        }
+    stage('Terraform Validate') {
+      steps {
+        sh 'terraform validate'
+      }
     }
+
+    stage('Terraform Plan') {
+      steps {
+        sh 'terraform plan -out=tfplan'
+      }
+    }
+
+    stage('Terraform Apply') {
+      steps {
+        input message: 'Approve Terraform Apply?'
+        sh 'terraform apply tfplan'
+      }
+    }
+    stage('Terraform destroy') {
+      steps {
+        input message: 'Approve Terraform destroy?'
+        sh 'terraform destroy -auto-approve'
+      }
+    }
+  }
+  
 }
