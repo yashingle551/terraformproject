@@ -1,7 +1,14 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+        AWS_DEFAULT_REGION    = "eu-north-1"
+    }
+
     stages {
+
         stage('Step 1: SCM Checkout') {
             steps {
                 checkout scm
@@ -10,33 +17,28 @@ pipeline {
 
         stage('Step 2: Terraform Init') {
             steps {
-                script {
-                    sh 'terraform init -reconfigure'
-                }
+                sh 'terraform init -reconfigure'
             }
         }
 
         stage('Step 3: Terraform Plan') {
             steps {
-                script {
-                    sh 'terraform plan -out=tfplan'
-                }
+                sh 'terraform plan -out=tfplan'
             }
         }
 
         stage('Step 4: Terraform Apply') {
             steps {
-                script {
-                    sh 'terraform apply -auto-approve tfplan'
-                }
+                sh 'terraform apply -auto-approve tfplan'
             }
         }
 
-        stage('Step 5: Terraform Destroy') {
+        stage('Step 5: Terraform Destroy (Manual)') {
+            when {
+                expression { return false }   // prevents auto destroy
+            }
             steps {
-                script {
-                    sh 'terraform destroy'
-                }
+                sh 'terraform destroy -auto-approve'
             }
         }
     }
