@@ -33,9 +33,9 @@ pipeline {
             }
         }
 
-        stage('Step 5: Terraform Destroy (Manual)') {
+        stage('Step 5: Terraform Destroy (Disabled)') {
             when {
-                expression { return false }   // prevents auto destroy
+                expression { false }
             }
             steps {
                 sh 'terraform destroy -auto-approve'
@@ -45,7 +45,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            deleteDir()   // safer than cleanWs()
         }
     }
 }
